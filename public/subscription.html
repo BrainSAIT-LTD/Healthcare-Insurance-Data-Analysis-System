@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BRAINSAIT Premium - Subscription Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dark-background: #131722;
+      --darker-background: #0f1219;
+      --card-background: #1f2639;
+      --input-background: #2a3147;
+      --accent: #ff6b35;
+      --accent-hover: #ff8a60;
+      --text-primary: #ffffff;
+      --text-secondary: #e0e0e0;
+      --text-muted: #9ca3af;
+      --border-color: #2a3147;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, var(--dark-background) 0%, var(--darker-background) 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(90deg, #ff6b35, #ff8a60);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .header p {
+      color: var(--text-muted);
+    }
+    
+    .card {
+      background-color: var(--card-background);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+    
+    .card-title {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      color: var(--text-primary);
+    }
+    
+    .subscription-status {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .subscription-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+    
+    .status-item {
+      flex: 1;
+      min-width: 200px;
+    }
+    
+    .status-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    
+    .status-value {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .status-value.highlight {
+      color: var(--accent);
+    }
+    
+    .progress-container {
+      width: 100%;
+      background-color: var(--input-background);
+      height: 8px;
+      border-radius: 4px;
+      margin: 1rem 0;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    
+    .button {
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-block;
+      text-align: center;
+      text-decoration: none;
+    }
+    
+    .button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    }
+    
+    .button.outline {
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+    }
+    
+    .button.outline:hover {
+      background: rgba(255, 107, 53, 0.1);
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+    
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    th {
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    
+    td {
+      color: var(--text-primary);
+    }
+    
+    .payment-method-tag {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      background-color: rgba(255, 107, 53, 0.1);
+      color: var(--accent);
+      font-weight: 500;
+    }
+    
+    .no-data {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+    }
+    
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 2rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    .back-link:hover {
+      color: var(--text-primary);
+    }
+    
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .modal.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .modal-content {
+      background-color: var(--card-background);
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+    
+    .modal.show .modal-content {
+      transform: translateY(0);
+    }
+    
+    .modal-title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+    
+    .modal-text {
+      margin-bottom: 2rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+      .subscription-info {
+        flex-direction: column;
+      }
+      
+      .button-group {
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .button {
+        width: 100%;
+      }
+      
+      th, td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.9rem;
+      }
+    }
+    
+    /* Motion effects */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body>
+  <!-- Subscription Check -->
+  <script>
+    // Check if user has an active subscription
+    function checkSubscription() {
+      const isPremiumPaid = localStorage.getItem('brainsait_premium_paid');
+      const premiumExpiry = localStorage.getItem('brainsait_premium_expiry');
+      
+      // If no subscription data found or expired, redirect to payment page
+      if (!isPremiumPaid || !premiumExpiry || new Date(premiumExpiry) < new Date()) {
+        window.location.href = 'payment.html';
+        return false;
+      }
+      
+      return true;
+    }
+    
+    // Run check immediately
+    if (!checkSubscription()) {
+      document.body.innerHTML = 'Redirecting to payment page...';
+    }
+  </script>
+
+  <div class="container">
+    <div class="header">
+      <h1>Subscription Management</h1>
+      <p>Manage your BRAINSAIT Premium subscription settings</p>
+    </div>
+    
+    <div class="card">
+      <h2 class="card-title">Subscription Status</h2>
+      
+      <div class="subscription-status">
+        <div class="subscription-info">
+          <div class="status-item">
+            <div class="status-label">Status</div>
+            <div class="status-value highlight">Active</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">Next Payment</div>
+            <div class="status-value" id="expiry-date">Loading...</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">Subscription Plan</div>
+            <div class="status-value">BRAINSAIT Premium</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">Monthly Fee</div>
+            <div class="status-value">$49.99</div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="status-label">Subscription Period</div>
+          <div class="progress-container">
+            <div class="progress-bar" id="subscription-progress"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+            <span id="start-date">Start Date</span>
+            <span id="days-left">0 days left</span>
+            <span id="end-date">End Date</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="button-group">
+        <a href="payment.html" class="button">Renew Subscription</a>
+        <button id="cancel-btn" class="button outline">Cancel Subscription</button>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2 class="card-title">Payment History</h2>
+      
+      <table id="payment-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Period</th>
+          </tr>
+        </thead>
+        <tbody id="payment-history">
+          <!-- Payment history will be populated here -->
+        </tbody>
+      </table>
+      
+      <div id="no-payments" class="no-data" style="display: none;">
+        <p>No payment history available</p>
+      </div>
+    </div>
+    
+    <a href="brainsait-integrated.html" class="back-link">← Back to Dashboard</a>
+  </div>
+  
+  <!-- Cancel Subscription Modal -->
+  <div id="cancel-modal" class="modal">
+    <div class="modal-content">
+      <h3 class="modal-title">Cancel Subscription?</h3>
+      <p class="modal-text">Are you sure you want to cancel your BRAINSAIT Premium subscription? You will still have access until the end of your current billing period.</p>
+      <div class="modal-actions">
+        <button id="cancel-confirm" class="button">Yes, Cancel</button>
+        <button id="cancel-dismiss" class="button outline">Keep Subscription</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get subscription details
+      const expiryDate = localStorage.getItem('brainsait_premium_expiry');
+      const startDate = localStorage.getItem('brainsait_subscription_start');
+      
+      if (expiryDate && startDate) {
+        const endDate = new Date(expiryDate);
+        const beginDate = new Date(startDate);
+        const now = new Date();
+        
+        // Format dates nicely
+        const formatter = new Intl.DateTimeFormat('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric'
+        });
+        
+        // Calculate days left and total subscription length
+        const daysLeft = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
+        const totalDays = Math.ceil((endDate - beginDate) / (1000 * 60 * 60 * 24));
+        const daysUsed = totalDays - daysLeft;
+        
+        // Update UI elements
+        document.getElementById('expiry-date').textContent = formatter.format(endDate);
+        document.getElementById('start-date').textContent = formatter.format(beginDate);
+        document.getElementById('end-date').textContent = formatter.format(endDate);
+        document.getElementById('days-left').textContent = daysLeft + ' days left';
+        
+        // Update progress bar
+        const percentUsed = Math.min(100, Math.round((daysUsed / totalDays) * 100));
+        document.getElementById('subscription-progress').style.width = percentUsed + '%';
+      }
+      
+      // Load payment history
+      const paymentHistory = JSON.parse(localStorage.getItem('brainsait_payment_history') || '[]');
+      const historyTable = document.getElementById('payment-history');
+      const noPayments = document.getElementById('no-payments');
+      
+      if (paymentHistory && paymentHistory.length > 0) {
+        // Format and display payment history
+        paymentHistory.reverse().forEach(payment => {
+          const paymentDate = new Date(payment.date);
+          const expiryDate = new Date(payment.expiryDate);
+          
+          const formatter = new Intl.DateTimeFormat('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric'
+          });
+          
+          let methodName = 'Credit Card';
+          switch(payment.method) {
+            case 'paypal': methodName = 'PayPal'; break;
+            case 'applepay': methodName = 'Apple Pay'; break;
+            case 'mada': methodName = 'Mada'; break;
+            case 'stcpay': methodName = 'STC Pay'; break;
+            case 'visa': methodName = 'Visa/MC'; break;
+          }
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${formatter.format(paymentDate)}</td>
+            <td>$${payment.amount}</td>
+            <td><span class="payment-method-tag">${methodName}</span></td>
+            <td>${formatter.format(paymentDate)} - ${formatter.format(expiryDate)}</td>
+          `;
+          
+          historyTable.appendChild(row);
+        });
+      } else {
+        // Show no payments message
+        noPayments.style.display = 'block';
+        document.getElementById('payment-table').style.display = 'none';
+      }
+      
+      // Handle cancel button
+      const cancelBtn = document.getElementById('cancel-btn');
+      const cancelModal = document.getElementById('cancel-modal');
+      const cancelConfirm = document.getElementById('cancel-confirm');
+      const cancelDismiss = document.getElementById('cancel-dismiss');
+      
+      cancelBtn.addEventListener('click', function() {
+        cancelModal.classList.add('show');
+      });
+      
+      cancelDismiss.addEventListener('click', function() {
+        cancelModal.classList.remove('show');
+      });
+      
+      cancelConfirm.addEventListener('click', function() {
+        // In a real implementation, this would call an API to cancel the subscription
+        // Here we'll simulate it by keeping access until expiry but disabling auto-renewal
+        localStorage.setItem('brainsait_auto_renew', 'false');
+        
+        // Show confirmation message
+        cancelModal.classList.remove('show');
+        alert('Your subscription has been cancelled. You will still have access until the end of your current billing period.');
+        
+        // Redirect back to dashboard
+        window.location.href = 'brainsait-integrated.html';
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BRAINSAIT Premium - Payment Required</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dark-background: #131722;
+      --darker-background: #0f1219;
+      --card-background: #1f2639;
+      --input-background: #2a3147;
+      --accent: #ff6b35;
+      --accent-hover: #ff8a60;
+      --text-primary: #ffffff;
+      --text-secondary: #e0e0e0;
+      --text-muted: #9ca3af;
+      --border-color: #2a3147;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, var(--dark-background) 0%, var(--darker-background) 100%);
+      color: var(--text-primary);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    
+    .container {
+      max-width: 800px;
+      width: 100%;
+    }
+    
+    .logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .logo h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #ff6b35, #ff8a60);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .logo p {
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+    
+    .payment-card {
+      background-color: var(--card-background);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      margin-bottom: 2rem;
+    }
+    
+    .payment-title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+    
+    .pricing {
+      background-color: rgba(255, 107, 53, 0.1);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .pricing-amount {
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    
+    .pricing-period {
+      color: var(--text-secondary);
+    }
+    
+    .features {
+      margin-bottom: 2rem;
+    }
+    
+    .feature {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    
+    .feature-icon {
+      margin-right: 0.75rem;
+      font-size: 1.25rem;
+      color: var(--accent);
+    }
+    
+    .feature-text {
+      color: var(--text-secondary);
+    }
+    
+    .payment-methods {
+      margin-bottom: 2rem;
+    }
+    
+    .payment-methods-title {
+      font-size: 1.2rem;
+      margin-bottom: 1.5rem;
+      color: var(--text-primary);
+    }
+    
+    .payment-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+    }
+    
+    .payment-option {
+      background-color: var(--input-background);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .payment-option:hover, .payment-option.selected {
+      border-color: var(--accent);
+      background-color: rgba(255, 107, 53, 0.1);
+    }
+    
+    .payment-option-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .payment-option-name {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    
+    .submit-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 1rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    }
+    
+    .back-link {
+      text-align: center;
+      margin-top: 2rem;
+    }
+    
+    .back-link a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    .back-link a:hover {
+      color: var(--text-primary);
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    /* Loading Animation */
+    .loading-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(15, 18, 25, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 1000;
+    }
+    
+    .spinner {
+      width: 64px;
+      height: 64px;
+      border: 8px solid rgba(255, 107, 53, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--accent);
+      animation: spin 1s ease-in-out infinite;
+      margin-bottom: 2rem;
+    }
+    
+    .loading-text {
+      color: var(--text-secondary);
+      font-size: 1.2rem;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 640px) {
+      .payment-options {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Animation (Initially Hidden) -->
+  <div id="loading" class="loading-container hidden">
+    <div class="spinner"></div>
+    <div class="loading-text">Processing your payment...</div>
+  </div>
+
+  <div class="container">
+    <div class="logo">
+      <h1>BRAINSAIT Premium</h1>
+      <p>Healthcare Insurance Intelligence Platform</p>
+    </div>
+    
+    <div id="message-container" style="margin-bottom: 1rem; display: none; padding: 1rem; border-radius: 8px; background-color: rgba(255, 107, 53, 0.1); border: 1px solid var(--accent); color: var(--text-secondary);"></div>
+    
+    <div class="payment-card">
+      <h2 id="payment-title" class="payment-title">Premium Access Required</h2>
+      
+      <div class="pricing">
+        <div class="pricing-amount">$49.99</div>
+        <div class="pricing-period">per month</div>
+      </div>
+      
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">✓</div>
+          <div class="feature-text">Modern dark-mode UI with advanced visualizations</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">✓</div>
+          <div class="feature-text">AI-powered insights and recommendations</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">✓</div>
+          <div class="feature-text">Enhanced file upload with progress tracking</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">✓</div>
+          <div class="feature-text">Multi-format reports with customizable sections</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">✓</div>
+          <div class="feature-text">Support for larger files (up to 10MB)</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">✓</div>
+          <div class="feature-text">Priority technical support</div>
+        </div>
+      </div>
+      
+      <div class="payment-methods">
+        <h3 class="payment-methods-title">Select a payment method</h3>
+        <div class="payment-options">
+          <div class="payment-option" data-method="paypal" onclick="selectPaymentMethod(this)">
+            <div class="payment-option-icon">💳</div>
+            <div class="payment-option-name">PayPal</div>
+          </div>
+          <div class="payment-option" data-method="applepay" onclick="selectPaymentMethod(this)">
+            <div class="payment-option-icon">🍎</div>
+            <div class="payment-option-name">Apple Pay</div>
+          </div>
+          <div class="payment-option" data-method="mada" onclick="selectPaymentMethod(this)">
+            <div class="payment-option-icon">💳</div>
+            <div class="payment-option-name">Mada</div>
+          </div>
+          <div class="payment-option" data-method="stcpay" onclick="selectPaymentMethod(this)">
+            <div class="payment-option-icon">📱</div>
+            <div class="payment-option-name">STC Pay</div>
+          </div>
+          <div class="payment-option" data-method="visa" onclick="selectPaymentMethod(this)">
+            <div class="payment-option-icon">💳</div>
+            <div class="payment-option-name">Visa/MC</div>
+          </div>
+        </div>
+      </div>
+      
+      <button id="payment-button" class="submit-btn" disabled>Proceed to Payment</button>
+    </div>
+    
+    <div class="back-link">
+      <a href="welcome.html">← Go back to Standard Interface</a>
+    </div>
+  </div>
+
+  <script>
+    let selectedMethod = null;
+    const paymentButton = document.getElementById('payment-button');
+    const loadingScreen = document.getElementById('loading');
+    const messageContainer = document.getElementById('message-container');
+    const paymentTitle = document.getElementById('payment-title');
+    
+    // Check if this is a renewal or new subscription
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if there's a message from redirect
+      const paymentMessage = sessionStorage.getItem('payment_message');
+      if (paymentMessage) {
+        messageContainer.style.display = 'block';
+        messageContainer.textContent = paymentMessage;
+        sessionStorage.removeItem('payment_message'); // Clear message
+      }
+      
+      // Check if user had a previous subscription
+      const prevSubscription = localStorage.getItem('brainsait_premium_paid');
+      const prevExpiry = localStorage.getItem('brainsait_premium_expiry');
+      const prevPaymentMethod = localStorage.getItem('brainsait_payment_method');
+      
+      if (prevSubscription && prevExpiry) {
+        const expiryDate = new Date(prevExpiry);
+        const now = new Date();
+        
+        if (expiryDate < now) {
+          // Expired subscription
+          paymentTitle.textContent = 'Renew Your Premium Access';
+          messageContainer.style.display = 'block';
+          messageContainer.textContent = 'Your previous subscription has expired. Please renew to continue using BRAINSAIT Premium.';
+        } else {
+          // Active subscription - renewal
+          paymentTitle.textContent = 'Extend Your Premium Access';
+          messageContainer.style.display = 'block';
+          
+          // Calculate days left
+          const daysLeft = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+          messageContainer.textContent = `You have ${daysLeft} days remaining in your current subscription. Renewing now will add 30 days to your current expiration date.`;
+        }
+        
+        // Pre-select previous payment method if available
+        if (prevPaymentMethod) {
+          setTimeout(() => {
+            const prevMethodElement = document.querySelector(`.payment-option[data-method="${prevPaymentMethod}"]`);
+            if (prevMethodElement) {
+              selectPaymentMethod(prevMethodElement);
+            }
+          }, 100);
+        }
+      }
+    });
+    
+    function selectPaymentMethod(element) {
+      // Remove selection from all options
+      document.querySelectorAll('.payment-option').forEach(option => {
+        option.classList.remove('selected');
+      });
+      
+      // Add selection to clicked option
+      element.classList.add('selected');
+      
+      // Store selected method
+      selectedMethod = element.getAttribute('data-method');
+      
+      // Enable payment button
+      paymentButton.removeAttribute('disabled');
+    }
+    
+    // Add event listener to payment button
+    paymentButton.addEventListener('click', function() {
+      if (!selectedMethod) {
+        alert('Please select a payment method.');
+        return;
+      }
+      
+      // Show loading animation
+      loadingScreen.classList.remove('hidden');
+      
+      // Simulate payment process (in real implementation, this would redirect to payment gateway)
+      setTimeout(function() {
+        const now = new Date();
+        let expiryDate;
+        
+        // Check if this is a renewal for an active subscription
+        const currentExpiry = localStorage.getItem('brainsait_premium_expiry');
+        if (currentExpiry) {
+          const currentExpiryDate = new Date(currentExpiry);
+          
+          // If current subscription is still valid, add 30 days to it
+          if (currentExpiryDate > now) {
+            expiryDate = new Date(currentExpiryDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+          } else {
+            // If expired, start fresh from now
+            expiryDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+          }
+        } else {
+          // New subscription - 30 days from now
+          expiryDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        }
+        
+        // Store payment status in local storage (this would be a token in real implementation)
+        localStorage.setItem('brainsait_premium_paid', 'true');
+        localStorage.setItem('brainsait_premium_expiry', expiryDate.toISOString());
+        localStorage.setItem('brainsait_subscription_start', now.toISOString());
+        localStorage.setItem('brainsait_payment_method', selectedMethod);
+        localStorage.setItem('brainsait_payment_amount', '49.99');
+        
+        // Store payment history
+        try {
+          // Get existing payment history or create new array
+          let paymentHistory = JSON.parse(localStorage.getItem('brainsait_payment_history') || '[]');
+          
+          // Add new payment record
+          paymentHistory.push({
+            date: now.toISOString(),
+            amount: '49.99',
+            method: selectedMethod,
+            expiryDate: expiryDate.toISOString()
+          });
+          
+          // Keep only last 10 transactions to save space
+          if (paymentHistory.length > 10) {
+            paymentHistory = paymentHistory.slice(-10);
+          }
+          
+          // Save updated history
+          localStorage.setItem('brainsait_payment_history', JSON.stringify(paymentHistory));
+        } catch (e) {
+          console.error('Failed to save payment history:', e);
+        }
+        
+        // Redirect to enhanced interface
+        window.location.href = 'brainsait-integrated.html';
+      }, 2000);
+    });
+  </script>
+</body>
+</html>

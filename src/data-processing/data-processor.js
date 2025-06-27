@@ -1,6 +1,3 @@
-import * as d3 from 'd3-array';
-import * as ss from 'simple-statistics';
-
 /**
  * Process and prepare insurance data for analysis
  * @param {Object} data - The raw data extracted from Excel or PDF
@@ -240,6 +237,63 @@ function normalizeAmount(value) {
 }
 
 /**
+ * Helper function to calculate mean
+ */
+function calculateMean(values) {
+  if (values.length === 0) return 0;
+  return values.reduce((sum, val) => sum + val, 0) / values.length;
+}
+
+/**
+ * Helper function to calculate median
+ */
+function calculateMedian(values) {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+/**
+ * Helper function to calculate standard deviation
+ */
+function calculateStandardDeviation(values) {
+  if (values.length === 0) return 0;
+  const mean = calculateMean(values);
+  const squaredDiffs = values.map(val => Math.pow(val - mean, 2));
+  return Math.sqrt(calculateMean(squaredDiffs));
+}
+
+/**
+ * Helper function to calculate quantiles
+ */
+function calculateQuantiles(values, quantiles) {
+  if (values.length === 0) return quantiles.map(() => 0);
+  const sorted = [...values].sort((a, b) => a - b);
+  return quantiles.map(q => {
+    const index = q * (sorted.length - 1);
+    const lower = Math.floor(index);
+    const upper = Math.ceil(index);
+    if (lower === upper) return sorted[lower];
+    return sorted[lower] * (upper - index) + sorted[upper] * (index - lower);
+  });
+}
+
+/**
+ * Helper function to group data by a key
+ */
+function groupBy(array, keyFn) {
+  return array.reduce((groups, item) => {
+    const key = keyFn(item);
+    if (!groups[key]) {
+      groups[key] = [];
+    }
+    groups[key].push(item);
+    return groups;
+  }, {});
+}
+
+/**
  * Enrich the processed data with statistical information
  * @param {Array} data - The processed data rows
  * @returns {Object} Enhanced data with statistics
@@ -268,42 +322,35 @@ function enrichWithStatistics(data) {
     if (values.length === 0) return;
     
     statistics[field] = {
-      mean: ss.mean(values),
-      median: ss.median(values),
-      min: ss.min(values),
-      max: ss.max(values),
-      standardDeviation: ss.standardDeviation(values),
-      quartiles: ss.quantile(values, [0.25, 0.5, 0.75])
+      mean: calculateMean(values),
+      median: calculateMedian(values),
+      min: Math.min(...values),
+      max: Math.max(...values),
+      standardDeviation: calculateStandardDeviation(values),
+      quartiles: calculateQuantiles(values, [0.25, 0.5, 0.75])
     };
   });
   
   // Calculate claim status statistics
   if (data.some(row => row.claimStatus)) {
-    const statusCounts = d3.rollup(
-      data,
-      v => v.length,
-      d => d.claimStatus
-    );
+    const statusGroups = groupBy(data, d => d.claimStatus);
     
-    statistics.claimStatus = Array.from(statusCounts, ([status, count]) => ({
+    statistics.claimStatus = Object.entries(statusGroups).map(([status, rows]) => ({
       status,
-      count,
-      percentage: (count / data.length) * 100
+      count: rows.length,
+      percentage: (rows.length / data.length) * 100
     }));
   }
   
   // Calculate rejection reason statistics if available
   if (data.some(row => row.rejectionReason)) {
-    const rejectionCounts = d3.rollup(
-      data.filter(row => row.rejectionReason),
-      v => v.length,
-      d => d.rejectionReason
-    );
+    const rejectionData = data.filter(row => row.rejectionReason);
+    const rejectionGroups = groupBy(rejectionData, d => d.rejectionReason);
     
-    statistics.rejectionReasons = Array.from(rejectionCounts, ([reason, count]) => ({
+    statistics.rejectionReasons = Object.entries(rejectionGroups).map(([reason, rows]) => ({
       reason,
-      count,
-      percentage: (count / data.filter(row => row.rejectionReason).length) * 100
+      count: rows.length,
+      percentage: (rows.length / rejectionData.length) * 100
     }));
   }
   

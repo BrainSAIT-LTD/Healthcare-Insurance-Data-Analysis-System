@@ -1,6 +1,7 @@
 name = "healthcare-insurance-analyzer"
 main = "src/index.js"
 compatibility_date = "2025-04-21"
+compatibility_flags = ["nodejs_compat"]
 
 [site]
 bucket = "./public"
@@ -14,13 +15,25 @@ routes = [
 [env.development]
 workers_dev = true
 
-# KV Namespace for storing settings and small datasets
+# KV Namespace for storing user data, sessions, and analytics
 [[kv_namespaces]]
 binding = "HEALTH_INSURANCE_DATA"
 id = "366ea9488c95404e80db8d1a94cb318b" # Production KV namespace ID
 preview_id = "366ea9488c95404e80db8d1a94cb318b" # Using same ID for preview/testing
 
+# Environment variables for authentication services
+[vars]
+TWILIO_ACCOUNT_SID = "YOUR_TWILIO_ACCOUNT_SID"
+TWILIO_VERIFY_SID = "YOUR_TWILIO_VERIFY_SERVICE_SID"
+APP_VERSION = "2.0.0"
+DEVELOPMENT_MODE = "true"
+
 # Set max size for uploads to handle large Excel and PDF files
 [limits]
 upload_size = "10MB"
 cpu_ms = 50 # Adding CPU time limit in milliseconds
+
+# Secrets (configure these with wrangler secret put)
+# TWILIO_AUTH_TOKEN - Twilio authentication token
+# SENDGRID_API_KEY - SendGrid API key for email sending (optional)
+# JWT_SECRET - Secret for JWT token signing (optional)

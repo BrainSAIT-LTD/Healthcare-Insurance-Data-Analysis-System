@@ -100,59 +100,81 @@ export async function analyzeRejections(request) {
  * @returns {Object} Rejection analysis results
  */
 export function analyzeRejectionPatterns(data) {
-  if (!data || !data.length) {
+  if (!data || !Array.isArray(data) || data.length === 0) {
     return { overallStats: {}, reasonsAnalysis: [], providersAnalysis: [], timeAnalysis: {} };
   }
+
+  // Helper function to group data by a key
+  const groupBy = (array, keyFn) => {
+    return array.reduce((groups, item) => {
+      const key = keyFn(item);
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(item);
+      return groups;
+    }, {});
+  };
 
   // Calculate overall statistics
   const totalClaims = data.length;
   const rejectedClaims = data.filter(row => row.claimStatus === 'Rejected').length;
-  const rejectionRate = (rejectedClaims / totalClaims) * 100;
+  const rejectionRate = totalClaims > 0 ? (rejectedClaims / totalClaims) * 100 : 0;
 
   // Analyze rejection reasons
-  const reasonsAnalysis = d3.rollup(
-    data.filter(row => row.claimStatus === 'Rejected'),
-    v => v.length,
-    d => d.rejectionReason
-  );
+  const rejectedData = data.filter(row => row.claimStatus === 'Rejected');
+  const reasonGroups = groupBy(rejectedData, d => d.rejectionReason || 'Unknown');
 
-  const reasonsAnalysisArray = Array.from(reasonsAnalysis, ([reason, count]) => ({
+  const reasonsAnalysisArray = Object.entries(reasonGroups).map(([reason, rows]) => ({
     reason,
-    count,
-    percentage: (count / rejectedClaims) * 100
+    count: rows.length,
+    percentage: rejectedClaims > 0 ? (rows.length / rejectedClaims) * 100 : 0
   })).sort((a, b) => b.count - a.count);
 
   // Analyze providers with highest rejection rates
-  const providersAnalysis = d3.rollup(
-    data.filter(row => row.claimStatus === 'Rejected'),
-    v => v.length,
-    d => d.providerName
-  );
+  const providerGroups = groupBy(rejectedData, d => d.providerName || 'Unknown');
 
-  const providersAnalysisArray = Array.from(providersAnalysis, ([provider, count]) => ({
-    provider,
-    rejectionCount: count,
-    percentage: (count / rejectedClaims) * 100,
-    topReasons: d3.rollup(
-      data.filter(row => row.claimStatus === 'Rejected' && row.providerName === provider),
-      v => v.length,
-      d => d.rejectionReason
-    )
-  })).sort((a, b) => b.rejectionCount - a.rejectionCount);
+  const providersAnalysisArray = Object.entries(providerGroups).map(([provider, rejectedRows]) => {
+    // Get all claims for this provider (not just rejected ones)
+    const allProviderClaims = data.filter(row => (row.providerName || 'Unknown') === provider);
+    
+    // Get top rejection reasons for this provider
+    const providerReasonGroups = groupBy(rejectedRows, d => d.rejectionReason || 'Unknown');
+    const topReasons = Object.entries(providerReasonGroups)
+      .map(([reason, rows]) => ({ reason, count: rows.length }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3); // Top 3 reasons
+
+    return {
+      provider,
+      rejectionCount: rejectedRows.length,
+      percentage: allProviderClaims.length > 0 
+        ? (rejectedRows.length / allProviderClaims.length) * 100 
+        : 0,
+      topReasons
+    };
+  }).sort((a, b) => b.rejectionCount - a.rejectionCount);
 
   // Analyze rejection trends over time
-  const timeAnalysis = d3.rollup(
-    data.filter(row => row.claimStatus === 'Rejected'),
-    v => v.length,
-    d => d.claimDate.substring(0, 7) // Group by month
+  const timeGroups = groupBy(rejectedData, d => 
+    d.claimDate ? d.claimDate.substring(0, 7) : '2024-01'
   );
 
-  const timeAnalysisArray = Array.from(timeAnalysis, ([month, count]) => ({
-    month,
-    total: data.filter(row => row.claimDate.substring(0, 7) === month).length,
-    rejected: count,
-    rejectionRate: (count / data.filter(row => row.claimDate.substring(0, 7) === month).length) * 100
-  })).sort((a, b) => new Date(a.month) - new Date(b.month));
+  const timeAnalysisArray = Object.entries(timeGroups).map(([month, rejectedRows]) => {
+    // Get all claims for this month (not just rejected ones)
+    const allMonthClaims = data.filter(row => 
+      (row.claimDate ? row.claimDate.substring(0, 7) : '2024-01') === month
+    );
+
+    return {
+      month,
+      total: allMonthClaims.length,
+      rejected: rejectedRows.length,
+      rejectionRate: allMonthClaims.length > 0 
+        ? (rejectedRows.length / allMonthClaims.length) * 100 
+        : 0
+    };
+  }).sort((a, b) => new Date(a.month) - new Date(b.month));
 
   return {
     overallStats: {

@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BRAINSAIT - Passwordless Authentication</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dark-background: #131722;
+      --darker-background: #0f1219;
+      --card-background: #1f2639;
+      --input-background: #2a3147;
+      --accent: #ff6b35;
+      --accent-hover: #ff8a60;
+      --text-primary: #ffffff;
+      --text-secondary: #e0e0e0;
+      --text-muted: #9ca3af;
+      --border-color: #2a3147;
+      --error-color: #ff5252;
+      --success-color: #4caf50;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, var(--dark-background) 0%, var(--darker-background) 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    
+    .auth-container {
+      max-width: 450px;
+      width: 100%;
+    }
+    
+    .logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .logo h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .logo-icon {
+      font-size: 3rem;
+    }
+    
+    .logo p {
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+    
+    .auth-card {
+      background-color: var(--card-background);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+    }
+    
+    .auth-tabs {
+      display: flex;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: var(--text-muted);
+      position: relative;
+    }
+    
+    .tab.active {
+      color: var(--accent);
+    }
+    
+    .tab::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    
+    .tab.active::after {
+      transform: scaleX(1);
+    }
+    
+    .tab:hover {
+      color: var(--text-secondary);
+    }
+    
+    .phone-input-container {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .country-code {
+      background-color: var(--input-background);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      padding: 1rem;
+      min-width: 120px;
+      font-size: 1rem;
+    }
+    
+    .phone-input {
+      flex: 1;
+    }
+    
+    .verification-container {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+      background: rgba(255, 107, 53, 0.05);
+      border: 1px solid rgba(255, 107, 53, 0.2);
+      border-radius: 12px;
+      margin-bottom: 2rem;
+    }
+    
+    .verification-container.active {
+      display: block;
+    }
+    
+    .verification-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    
+    .verification-code-input {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin: 2rem 0;
+    }
+    
+    .code-digit {
+      width: 60px;
+      height: 60px;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      background-color: var(--input-background);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+    
+    .code-digit:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+    }
+    
+    .resend-timer {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+    
+    .resend-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: underline;
+    }
+    
+    .resend-btn:disabled {
+      color: var(--text-muted);
+      cursor: not-allowed;
+      text-decoration: none;
+    }
+    
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    
+    .step {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--input-background);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      margin: 0 0.5rem;
+      position: relative;
+    }
+    
+    .step.active {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .step.completed {
+      background: var(--success-color);
+      color: white;
+    }
+    
+    .step::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 100%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 2px;
+      background: var(--border-color);
+      z-index: -1;
+    }
+    
+    .step:last-child::after {
+      display: none;
+    }
+    
+    .step.completed::after {
+      background: var(--success-color);
+    }
+    
+    .auth-form {
+      display: none;
+    }
+    
+    .auth-form.active {
+      display: block;
+    }
+    
+    .contact-method {
+      display: none;
+    }
+    
+    .contact-method.active {
+      display: block;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    .input-wrapper {
+      position: relative;
+    }
+    
+    input {
+      width: 100%;
+      padding: 1rem;
+      background-color: var(--input-background);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    
+    .input-error {
+      color: var(--error-color);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+    
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 1rem;
+    }
+    
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    }
+    
+    .remember-forgot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .remember-me {
+      display: flex;
+      align-items: center;
+    }
+    
+    .remember-me input {
+      width: auto;
+      margin-right: 0.5rem;
+    }
+    
+    .forgot-password {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.3s ease;
+    }
+    
+    .forgot-password:hover {
+      color: var(--accent-hover);
+    }
+    
+    .switch-form {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    
+    .switch-form a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    .switch-form a:hover {
+      color: var(--accent-hover);
+    }
+    
+    .alert {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      display: none;
+    }
+    
+    .alert.error {
+      background-color: rgba(255, 82, 82, 0.1);
+      border: 1px solid rgba(255, 82, 82, 0.3);
+      color: var(--error-color);
+    }
+    
+    .alert.success {
+      background-color: rgba(76, 175, 80, 0.1);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      color: var(--success-color);
+    }
+    
+    .loading {
+      position: relative;
+    }
+    
+    .loading::after {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    @keyframes spin {
+      to { transform: translateY(-50%) rotate(360deg); }
+    }
+    
+    .oauth-buttons {
+      margin-top: 1.5rem;
+    }
+    
+    .oauth-divider {
+      display: flex;
+      align-items: center;
+      margin: 1.5rem 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    
+    .oauth-divider::before,
+    .oauth-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background-color: var(--border-color);
+    }
+    
+    .oauth-divider::before {
+      margin-right: 1rem;
+    }
+    
+    .oauth-divider::after {
+      margin-left: 1rem;
+    }
+    
+    .oauth-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      background-color: var(--input-background);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .oauth-button:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      transform: translateY(-2px);
+    }
+    
+    .oauth-icon {
+      margin-right: 0.75rem;
+      font-size: 1.2rem;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    
+    .error-shake {
+      animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+    
+    @keyframes shake {
+      10%, 90% { transform: translateX(-1px); }
+      20%, 80% { transform: translateX(2px); }
+      30%, 50%, 70% { transform: translateX(-3px); }
+      40%, 60% { transform: translateX(3px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="logo">
+      <h1><span class="logo-icon">🏥</span>BRAINSAIT</h1>
+      <p>Healthcare Insurance Intelligence Platform</p>
+      <p style="font-size: 0.8rem; margin-top: 0.5rem; color: var(--text-muted);">Passwordless Authentication</p>
+    </div>
+    
+    <div class="auth-card">
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <div class="step active" id="step-1">1</div>
+        <div class="step" id="step-2">2</div>
+        <div class="step" id="step-3">3</div>
+      </div>
+      
+      <div class="auth-tabs">
+        <div class="tab active" data-method="email">📧 Email</div>
+        <div class="tab" data-method="phone">📱 Phone</div>
+      </div>
+      
+      <div id="alert" class="alert"></div>
+      
+      <!-- Step 1: Contact Information -->
+      <div id="contact-form" class="auth-form active">
+        <h2 style="text-align: center; margin-bottom: 1.5rem; color: var(--text-primary);">Enter your contact information</h2>
+        
+        <!-- Email Form -->
+        <div id="email-form" class="contact-method active">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <div class="input-wrapper">
+              <input type="email" id="email" placeholder="Enter your email address" required>
+            </div>
+            <div class="input-error" id="email-error">Please enter a valid email address</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="full-name">Full Name</label>
+            <div class="input-wrapper">
+              <input type="text" id="full-name" placeholder="Enter your full name" required>
+            </div>
+            <div class="input-error" id="name-error">Please enter your full name</div>
+          </div>
+        </div>
+        
+        <!-- Phone Form -->
+        <div id="phone-form" class="contact-method">
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <div class="phone-input-container">
+              <select class="country-code" id="country-code">
+                <option value="+966">🇸🇦 +966</option>
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+44">🇬🇧 +44</option>
+                <option value="+971">🇦🇪 +971</option>
+                <option value="+965">🇰🇼 +965</option>
+                <option value="+973">🇧🇭 +973</option>
+                <option value="+974">🇶🇦 +974</option>
+              </select>
+              <input type="tel" id="phone" class="phone-input" placeholder="5XXXXXXXX" required>
+            </div>
+            <div class="input-error" id="phone-error">Please enter a valid phone number</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="phone-name">Full Name</label>
+            <div class="input-wrapper">
+              <input type="text" id="phone-name" placeholder="Enter your full name" required>
+            </div>
+            <div class="input-error" id="phone-name-error">Please enter your full name</div>
+          </div>
+        </div>
+        
+        <button type="button" class="submit-btn" id="send-code-btn">Send Verification Code</button>
+      </div>
+      
+      <!-- Step 2: Verification -->
+      <div id="verification-step" class="verification-container">
+        <div class="verification-icon">�</div>
+        <h2 style="margin-bottom: 1rem;">Enter Verification Code</h2>
+        <p id="verification-message" style="color: var(--text-secondary); margin-bottom: 2rem;">
+          We've sent a verification code to your contact information
+        </p>
+        
+        <div class="verification-code-input">
+          <input type="text" class="code-digit" maxlength="1" data-index="0">
+          <input type="text" class="code-digit" maxlength="1" data-index="1">
+          <input type="text" class="code-digit" maxlength="1" data-index="2">
+          <input type="text" class="code-digit" maxlength="1" data-index="3">
+          <input type="text" class="code-digit" maxlength="1" data-index="4">
+          <input type="text" class="code-digit" maxlength="1" data-index="5">
+        </div>
+        
+        <div class="resend-timer">
+          <span id="timer-text">Resend code in <span id="countdown">60</span> seconds</span>
+          <button class="resend-btn" id="resend-btn" disabled>Resend Code</button>
+        </div>
+        
+        <button type="button" class="submit-btn" id="verify-code-btn">Verify & Continue</button>
+        
+        <button type="button" class="submit-btn" id="back-btn" style="background: var(--input-background); color: var(--text-primary); margin-top: 1rem;">
+          Back to Contact Info
+        </button>
+      </div>
+      
+      <!-- Step 3: Success -->
+      <div id="success-step" class="verification-container">
+        <div class="verification-icon">✅</div>
+        <h2 style="margin-bottom: 1rem;">Authentication Successful!</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+          Welcome to BRAINSAIT Healthcare Intelligence Platform
+        </p>
+        
+        <button type="button" class="submit-btn" id="continue-btn">Continue to Platform</button>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>© 2025 BrainSAIT-LTD • Healthcare Insurance Intelligence Platform</p>
+      <p style="margin-top: 0.5rem;">
+        <a href="#" style="color: var(--text-muted); text-decoration: none; margin: 0 0.5rem;">Terms</a>
+        <a href="#" style="color: var(--text-muted); text-decoration: none; margin: 0 0.5rem;">Privacy</a>
+        <a href="#" style="color: var(--text-muted); text-decoration: none; margin: 0 0.5rem;">Support</a>
+      </p>
+    </div>
+  </div>
+  
+  <script>
+    // Development mode check
+    function isDevelopmentMode() {
+      return window.location.hostname === 'localhost' || 
+             window.location.hostname === '127.0.0.1' ||
+             window.location.hostname.includes('workers.dev') ||
+             window.location.search.includes('dev=true');
+    }
+    
+    // Development auto-fill (remove in production)
+    function setupDevelopmentMode() {
+      if (!isDevelopmentMode()) return;
+      
+      // Add development indicator
+      const indicator = document.createElement('div');
+      indicator.innerHTML = '🔧 Development Mode - Click to auto-fill';
+      indicator.style.cssText = `
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: #f39c12;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        z-index: 10000;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      `;
+      indicator.onclick = autoFillForm;
+      document.body.appendChild(indicator);
+      
+      console.log('🔧 Development mode active - Authentication API endpoints available');
+    }
+    
+    function autoFillForm() {
+      if (currentMethod === 'email') {
+        document.getElementById('email').value = 'user@example.com';
+        document.getElementById('full-name').value = 'Test User';
+      } else {
+        document.getElementById('country-code').value = '+966';
+        document.getElementById('phone').value = '501234567';
+        document.getElementById('phone-name').value = 'Test User';
+      }
+    }
+    
+    // Load existing authentication
+    function checkExistingAuth() {
+      const authToken = localStorage.getItem('brainsait_auth_token');
+      if (authToken) {
+        // Verify token with server
+        fetch('/api/auth/user', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Valid session, redirect to platform
+            console.log('Existing valid session found, redirecting...');
+            window.location.href = '/welcome.html';
+          } else {
+            // Invalid session, clear stored data
+            localStorage.removeItem('brainsait_auth_token');
+            localStorage.removeItem('brainsait_user');
+          }
+        })
+        .catch(error => {
+          console.error('Auth check error:', error);
+          // Clear potentially invalid auth data in case of network error
+          if (!isDevelopmentMode()) {
+            localStorage.removeItem('brainsait_auth_token');
+            localStorage.removeItem('brainsait_user');
+          }
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize development mode and check existing auth
+      setupDevelopmentMode();
+      checkExistingAuth();
+      
+      let currentMethod = 'email';
+      let currentStep = 1;
+      let verificationToken = null;
+      let resendTimer = null;
+      let countdown = 60;
+      
+      // Method switching
+      const tabs = document.querySelectorAll('.tab');
+      const contactMethods = document.querySelectorAll('.contact-method');
+      
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const method = tab.getAttribute('data-method');
+          
+          // Update tab state
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          
+          // Update contact method
+          contactMethods.forEach(cm => cm.classList.remove('active'));
+          document.getElementById(`${method}-form`).classList.add('active');
+          
+          currentMethod = method;
+          hideAlert();
+        });
+      });
+      
+      // Verification code input handling
+      const codeInputs = document.querySelectorAll('.code-digit');
+      codeInputs.forEach((input, index) => {
+        input.addEventListener('input', function(e) {
+          const value = e.target.value;
+          
+          // Only allow numbers
+          if (!/^\d$/.test(value) && value !== '') {
+            e.target.value = '';
+            return;
+          }
+          
+          if (value && index < codeInputs.length - 1) {
+            codeInputs[index + 1].focus();
+          }
+          
+          // Auto-verify when all digits are entered
+          const code = Array.from(codeInputs).map(input => input.value).join('');
+          if (code.length === 6) {
+            setTimeout(() => verifyCode(), 100);
+          }
+        });
+        
+        input.addEventListener('keydown', function(e) {
+          if (e.key === 'Backspace' && !e.target.value && index > 0) {
+            codeInputs[index - 1].focus();
+          }
+        });
+        
+        input.addEventListener('paste', function(e) {
+          e.preventDefault();
+          const paste = (e.clipboardData || window.clipboardData).getData('text');
+          const digits = paste.replace(/\D/g, '').slice(0, 6);
+          
+          for (let i = 0; i < digits.length && i < codeInputs.length; i++) {
+            codeInputs[i].value = digits[i];
+          }
+          
+          if (digits.length === 6) {
+            setTimeout(() => verifyCode(), 100);
+          }
+        });
+      });
+      
+      // Send verification code
+      document.getElementById('send-code-btn').addEventListener('click', sendVerificationCode);
+      document.getElementById('verify-code-btn').addEventListener('click', verifyCode);
+      document.getElementById('resend-btn').addEventListener('click', resendCode);
+      document.getElementById('back-btn').addEventListener('click', goBackToStep1);
+      document.getElementById('continue-btn').addEventListener('click', continueToPlatform);
+      
+      function sendVerificationCode() {
+        const btn = document.getElementById('send-code-btn');
+        let contact, name;
+        
+        if (currentMethod === 'email') {
+          contact = document.getElementById('email').value;
+          name = document.getElementById('full-name').value;
+          
+          if (!validateEmail(contact)) {
+            showError('email-error');
+            return;
+          }
+          
+          if (!name.trim()) {
+            showError('name-error');
+            return;
+          }
+        } else {
+          const countryCode = document.getElementById('country-code').value;
+          const phoneNumber = document.getElementById('phone').value;
+          contact = countryCode + phoneNumber;
+          name = document.getElementById('phone-name').value;
+          
+          if (!validatePhone(phoneNumber)) {
+            showError('phone-error');
+            return;
+          }
+          
+          if (!name.trim()) {
+            showError('phone-name-error');
+            return;
+          }
+        }
+        
+        // Clear errors
+        hideAllErrors();
+        
+        // Show loading
+        btn.disabled = true;
+        btn.classList.add('loading');
+        btn.innerText = 'Sending Code...';
+        
+        // Call API to send verification code
+        fetch('/api/auth/send-verification', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            method: currentMethod,
+            contact: contact,
+            name: name
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          btn.disabled = false;
+          btn.classList.remove('loading');
+          btn.innerText = 'Send Verification Code';
+          
+          if (data.success) {
+            verificationToken = data.token;
+            goToStep2(contact);
+          } else {
+            showAlert(data.message || 'Failed to send verification code. Please try again.', 'error');
+          }
+        })
+        .catch(error => {
+          console.error('Send verification error:', error);
+          btn.disabled = false;
+          btn.classList.remove('loading');
+          btn.innerText = 'Send Verification Code';
+          
+          // Development mode fallback
+          if (isDevelopmentMode()) {
+            verificationToken = 'dev-token-' + Date.now();
+            goToStep2(contact);
+          } else {
+            showAlert('Failed to connect to the server. Please try again later.', 'error');
+          }
+        });
+      }
+      
+      function verifyCode() {
+        const code = Array.from(codeInputs).map(input => input.value).join('');
+        
+        if (code.length !== 6) {
+          showAlert('Please enter the complete 6-digit verification code.', 'error');
+          return;
+        }
+        
+        const btn = document.getElementById('verify-code-btn');
+        btn.disabled = true;
+        btn.classList.add('loading');
+        btn.innerText = 'Verifying...';
+        
+        // Call API to verify code
+        fetch('/api/auth/verify-code', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            token: verificationToken,
+            code: code
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          btn.disabled = false;
+          btn.classList.remove('loading');
+          btn.innerText = 'Verify & Continue';
+          
+          if (data.success) {
+            // Store authentication data
+            localStorage.setItem('brainsait_auth_token', data.authToken);
+            localStorage.setItem('brainsait_user', JSON.stringify(data.user));
+            
+            // Check subscription status from user data
+            if (data.user.subscription && data.user.subscription.active) {
+              localStorage.setItem('brainsait_premium_paid', 'true');
+              localStorage.setItem('brainsait_premium_expiry', data.user.subscription.expiresAt);
+              localStorage.setItem('brainsait_subscription_start', data.user.subscription.startedAt);
+            }
+            
+            goToStep3();
+          } else {
+            showAlert(data.message || 'Invalid verification code. Please try again.', 'error');
+            
+            // Clear code inputs
+            codeInputs.forEach(input => input.value = '');
+            codeInputs[0].focus();
+          }
+        })
+        .catch(error => {
+          console.error('Verify code error:', error);
+          btn.disabled = false;
+          btn.classList.remove('loading');
+          btn.innerText = 'Verify & Continue';
+          
+          // Development mode fallback
+          if (isDevelopmentMode()) {
+            const contact = currentMethod === 'email' ? 
+              document.getElementById('email').value : 
+              document.getElementById('country-code').value + document.getElementById('phone').value;
+            const name = currentMethod === 'email' ? 
+              document.getElementById('full-name').value : 
+              document.getElementById('phone-name').value;
+              
+            // Store mock authentication data
+            localStorage.setItem('brainsait_auth_token', 'dev-auth-token-' + Date.now());
+            localStorage.setItem('brainsait_user', JSON.stringify({
+              id: 'dev-user-' + Date.now(),
+              name: name,
+              contact: contact,
+              method: currentMethod,
+              verified: true,
+              createdAt: new Date().toISOString()
+            }));
+            
+            goToStep3();
+          } else {
+            showAlert('Failed to connect to the server. Please try again later.', 'error');
+          }
+        });
+      }
+      
+      function resendCode() {
+        const btn = document.getElementById('resend-btn');
+        btn.disabled = true;
+        btn.innerText = 'Sending...';
+        
+        // Reset countdown
+        countdown = 60;
+        startResendTimer();
+        
+        // Resend the code (same as initial send)
+        sendVerificationCode();
+      }
+      
+      function goToStep2(contact) {
+        currentStep = 2;
+        updateStepIndicator();
+        
+        // Hide contact form, show verification
+        document.getElementById('contact-form').classList.remove('active');
+        document.getElementById('verification-step').classList.add('active');
+        
+        // Update verification message
+        const message = currentMethod === 'email' ? 
+          `We've sent a 6-digit verification code to ${contact}` :
+          `We've sent a 6-digit verification code via SMS to ${contact}`;
+        document.getElementById('verification-message').innerText = message;
+        
+        // Focus first code input
+        codeInputs[0].focus();
+        
+        // Start resend timer
+        startResendTimer();
+        
+        showAlert('Verification code sent successfully!', 'success');
+      }
+      
+      function goToStep3() {
+        currentStep = 3;
+        updateStepIndicator();
+        
+        // Hide verification, show success
+        document.getElementById('verification-step').classList.remove('active');
+        document.getElementById('success-step').classList.add('active');
+        
+        // Clear any timers
+        if (resendTimer) {
+          clearInterval(resendTimer);
+        }
+      }
+      
+      function goBackToStep1() {
+        currentStep = 1;
+        updateStepIndicator();
+        
+        // Show contact form, hide verification
+        document.getElementById('verification-step').classList.remove('active');
+        document.getElementById('contact-form').classList.add('active');
+        
+        // Clear verification inputs
+        codeInputs.forEach(input => input.value = '');
+        
+        // Clear timer
+        if (resendTimer) {
+          clearInterval(resendTimer);
+        }
+        
+        hideAlert();
+      }
+      
+      function continueToPlatform() {
+        // Check if user has subscription data
+        const hasPremium = localStorage.getItem('brainsait_premium_paid') === 'true';
+        
+        if (hasPremium) {
+          window.location.href = 'brainsait-integrated.html';
+        } else {
+          window.location.href = 'welcome.html';
+        }
+      }
+      
+      function updateStepIndicator() {
+        const steps = document.querySelectorAll('.step');
+        
+        steps.forEach((step, index) => {
+          const stepNumber = index + 1;
+          
+          if (stepNumber < currentStep) {
+            step.classList.add('completed');
+            step.classList.remove('active');
+          } else if (stepNumber === currentStep) {
+            step.classList.add('active');
+            step.classList.remove('completed');
+          } else {
+            step.classList.remove('active', 'completed');
+          }
+        });
+      }
+      
+      function startResendTimer() {
+        const timerText = document.getElementById('timer-text');
+        const resendBtn = document.getElementById('resend-btn');
+        const countdownSpan = document.getElementById('countdown');
+        
+        resendBtn.disabled = true;
+        timerText.style.display = 'inline';
+        resendBtn.style.display = 'none';
+        
+        resendTimer = setInterval(() => {
+          countdown--;
+          countdownSpan.textContent = countdown;
+          
+          if (countdown <= 0) {
+            clearInterval(resendTimer);
+            timerText.style.display = 'none';
+            resendBtn.style.display = 'inline';
+            resendBtn.disabled = false;
+            resendBtn.innerText = 'Resend Code';
+          }
+        }, 1000);
+      }
+      
+      function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+      }
+      
+      function validatePhone(phone) {
+        // Saudi phone number validation (9 digits starting with 5)
+        const saudiRe = /^5\d{8}$/;
+        // General international phone validation (7-15 digits)
+        const generalRe = /^\d{7,15}$/;
+        
+        const countryCode = document.getElementById('country-code').value;
+        if (countryCode === '+966') {
+          return saudiRe.test(phone);
+        }
+        
+        return generalRe.test(phone);
+      }
+      
+      function showError(errorId) {
+        const errorElement = document.getElementById(errorId);
+        errorElement.style.display = 'block';
+        
+        const inputId = errorId.replace('-error', '');
+        const inputElement = document.getElementById(inputId);
+        if (inputElement) {
+          inputElement.style.borderColor = 'var(--error-color)';
+        }
+      }
+      
+      function hideError(errorId) {
+        const errorElement = document.getElementById(errorId);
+        errorElement.style.display = 'none';
+        
+        const inputId = errorId.replace('-error', '');
+        const inputElement = document.getElementById(inputId);
+        if (inputElement) {
+          inputElement.style.borderColor = 'var(--border-color)';
+        }
+      }
+      
+      function hideAllErrors() {
+        const errors = document.querySelectorAll('.input-error');
+        errors.forEach(error => error.style.display = 'none');
+        
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => input.style.borderColor = 'var(--border-color)');
+      }
+      
+      function showAlert(message, type) {
+        const alertElement = document.getElementById('alert');
+        alertElement.className = 'alert';
+        alertElement.classList.add(type);
+        alertElement.innerText = message;
+        alertElement.style.display = 'block';
+        
+        // Auto-hide success messages
+        if (type === 'success') {
+          setTimeout(() => {
+            hideAlert();
+          }, 3000);
+        }
+      }
+      
+      function hideAlert() {
+        const alertElement = document.getElementById('alert');
+        alertElement.style.display = 'none';
+      }
+      
+      // Initialize contact method visibility
+      contactMethods.forEach(cm => cm.classList.remove('active'));
+      document.getElementById('email-form').classList.add('active');
+    });
+  </script>
+</body>
+</html>

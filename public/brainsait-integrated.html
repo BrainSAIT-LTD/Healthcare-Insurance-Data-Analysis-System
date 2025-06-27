@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRAINSAIT - Healthcare Insurance Intelligence Platform</title>
+    
+    <!-- Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link rel="stylesheet" href="css/brainsait.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        :root {
+            /* Colors */
+            --bg-primary: #000000;
+            --bg-secondary: #111111;
+            --bg-card: #1a1a1a;
+            --bg-card-hover: #222222;
+            
+            --accent: #ff6b35;
+            --accent-dark: #e55a2b;
+            --accent-glow: rgba(255, 107, 53, 0.3);
+            
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #888888;
+            
+            --border: #333333;
+            --border-hover: #ff6b35;
+            
+            /* Effects */
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 4px 20px var(--accent-glow);
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #ff8c42);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid var(--accent);
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Main Card */
+        .main-card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .main-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), #ff8c42);
+        }
+
+        .card-content {
+            padding: 2rem;
+        }
+
+        /* Upload Area */
+        .upload-section {
+            margin-bottom: 2rem;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--border-radius);
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            background: var(--bg-secondary);
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: var(--accent);
+            background: rgba(255, 107, 53, 0.05);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent), #ff8c42);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .upload-text {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .upload-subtext {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* File List */
+        .file-list {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .file-list.show {
+            display: block;
+        }
+
+        .file-item {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .file-item:hover {
+            border-color: var(--accent);
+            transform: translateX(4px);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .file-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .file-details h4 {
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .file-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .remove-btn {
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Processing */
+        .processing-section {
+            display: none;
+            text-align: center;
+            padding: 3rem 2rem;
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border);
+            margin: 2rem 0;
+        }
+
+        .processing-section.active {
+            display: block;
+        }
+
+        .processing-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .processing-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .processing-details {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #ff8c42);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        /* Dashboard Section */
+        .dashboard-section {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .dashboard-section.active {
+            display: block;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-glow);
+            border-color: var(--accent);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+            background: linear-gradient(135deg, var(--accent), #ff8c42);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Charts Container */
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        @media (min-width: 992px) {
+            .charts-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 300px;
+        }
+
+        /* Results/Insights */
+        .results-section {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .results-card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .results-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .results-content {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .highlight {
+            background: rgba(255, 107, 53, 0.2);
+            color: var(--accent);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* Download Section */
+        .download-section {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .download-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 180px;
+            justify-content: center;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 1000;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* API Key Section */
+        .api-key-section {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .api-key-input {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            color: var(--text-primary);
+            padding: 1rem;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .api-key-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Insights */
+        .insights-container {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .insights-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .insights-section h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .insights-content {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            padding: 1rem 1.5rem;
+            z-index: 10000;
+            max-width: 350px;
+            transform: translateX(100%);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success { border-left: 4px solid #00ff88; }
+        .notification.error { border-left: 4px solid #ff5252; }
+        .notification.warning { border-left: 4px solid #ffa726; }
+
+        /* Navigation Tabs */
+        .tabs-nav {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .tabs-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-link {
+            padding: 1rem 2rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .tab-link:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-link.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* Subscription Bar */
+        .subscription-bar {
+            background-color: rgba(255, 107, 53, 0.1);
+            border-bottom: 1px solid var(--accent);
+            padding: 0.75rem 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+        }
+        
+        .subscription-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .subscription-status {
+            background-color: var(--accent);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .subscription-expiry {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .subscription-btn {
+            background-color: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .subscription-btn:hover {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .subscription-bar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .subscription-info {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
+            }
+        }
+            
+            .download-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .download-btn {
+                min-width: 200px;
+            }
+
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+  <!-- Subscription Check -->
+  <script>
+    // Check if user has an active subscription
+    function checkSubscription() {
+      const isPremiumPaid = localStorage.getItem('brainsait_premium_paid');
+      const premiumExpiry = localStorage.getItem('brainsait_premium_expiry');
+      const subscriptionStart = localStorage.getItem('brainsait_subscription_start');
+      
+      // Verify subscription data exists
+      if (!isPremiumPaid || isPremiumPaid !== 'true' || !premiumExpiry || !subscriptionStart) {
+        console.log("Missing subscription data");
+        redirectToPayment();
+        return false;
+      }
+      
+      try {
+        // Check if subscription is expired
+        const expiryDate = new Date(premiumExpiry);
+        const startDate = new Date(subscriptionStart);
+        const now = new Date();
+        
+        // Validate dates are proper
+        if (isNaN(expiryDate) || isNaN(startDate)) {
+          console.log("Invalid date format in subscription data");
+          redirectToPayment();
+          return false;
+        }
+        
+        // Check that subscription start date is in the past
+        if (startDate > now) {
+          console.log("Invalid subscription start date");
+          redirectToPayment();
+          return false;
+        }
+        
+        // Check that subscription hasn't expired
+        if (expiryDate < now) {
+          console.log("Subscription expired");
+          redirectToPayment("Your subscription has expired. Please renew to continue using BRAINSAIT Premium.");
+          return false;
+        }
+        
+        // Check that subscription is not too far in the future (max 2 years)
+        const twoYearsFromNow = new Date();
+        twoYearsFromNow.setFullYear(twoYearsFromNow.getFullYear() + 2);
+        
+        if (expiryDate > twoYearsFromNow) {
+          console.log("Suspicious expiry date detected");
+          localStorage.removeItem('brainsait_premium_expiry');
+          redirectToPayment();
+          return false;
+        }
+        
+        return true;
+      } catch (error) {
+        console.error("Error validating subscription:", error);
+        redirectToPayment();
+        return false;
+      }
+    }
+    
+    function redirectToPayment(message) {
+      // Optional message to show on payment page
+      if (message) {
+        sessionStorage.setItem('payment_message', message);
+      }
+      
+      window.location.href = 'payment.html';
+    }
+    
+    // Run check immediately
+    if (!checkSubscription()) {
+      // Prevent flash of content by stopping script execution
+      document.body.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100vh; color: #ffffff; background: linear-gradient(135deg, #18191a 0%, #121212 100%);"><div>Redirecting to payment page...</div></div>';
+    }
+  </script>
+
+  <!-- Status Indicator -->
+  <div class="status-indicator">
+    <div class="status-dot"></div>
+    <div class="status-text">Intelligence Ready</div>
+  </div>
+
+    <div class="container">
+        <!-- Subscription Status Bar -->
+        <div id="subscription-bar" class="subscription-bar">
+            <div class="subscription-info">
+                <span class="subscription-status">Premium Active</span>
+                <span class="subscription-expiry">Expires: <span id="subscription-date">Loading...</span></span>
+            </div>
+            <div class="subscription-actions" style="display: flex; gap: 10px;">
+                <button id="renew-subscription" class="subscription-btn">Renew</button>
+                <a href="subscription.html" class="subscription-btn" style="text-decoration: none;">Manage</a>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">BRAINSAIT</div>
+            <div class="subtitle">Healthcare Insurance Intelligence Platform</div>
+            <div class="badge">
+                🧠 Advanced Document Intelligence & Analysis
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs-nav">
+            <a href="#upload" class="tab-link active" data-tab="upload">Upload Data</a>
+            <a href="#dashboard" class="tab-link" data-tab="dashboard">Dashboard</a>
+            <a href="#insights" class="tab-link" data-tab="insights">AI Insights</a>
+            <a href="#reports" class="tab-link" data-tab="reports">Reports</a>
+        </div>
+
+        <!-- Main Card -->
+        <div class="main-card">
+            <div class="card-content">
+                <!-- Upload Section -->
+                <section class="upload-section" id="upload-section">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📄</div>
+                        <h2 class="upload-text">Upload Insurance Documents</h2>
+                        <p class="upload-subtext">Drop your files here or click to browse. Supports PDF, Excel, and CSV files up to 10MB each.</p>
+                        <input type="file" id="fileInput" class="file-input" multiple accept=".pdf,.xlsx,.xls,.csv">
+                        <button class="upload-btn" id="uploadBtn">Select Files</button>
+                    </div>
+                    
+                    <div class="file-list" id="fileList"></div>
+                </section>
+
+                <!-- Processing Section -->
+                <section class="processing-section" id="processingSection">
+                    <div class="processing-icon">🧠</div>
+                    <div class="processing-text">Intelligence Analysis in Progress</div>
+                    <div class="processing-details">Our advanced intelligence system is analyzing your documents for patterns, insights, and recommendations.</div>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </section>
+
+                <!-- Dashboard Section -->
+                <section class="dashboard-section" id="dashboard-section">
+                    <h2 class="results-title">Dashboard</h2>
+                    
+                    <div class="dashboard-stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Claims</div>
+                            <div class="stat-value" id="total-claims">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Rejection Rate</div>
+                            <div class="stat-value" id="rejection-rate">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Total Amount</div>
+                            <div class="stat-value" id="total-amount">$0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Avg. Processing Time</div>
+                            <div class="stat-value" id="processing-time">0</div>
+                            <div class="stat-label">days</div>
+                        </div>
+                    </div>
+                    
+                    <div class="charts-container">
+                        <div class="chart-card">
+                            <h3 class="chart-title">Monthly Claims Trend</h3>
+                            <canvas id="trend-chart-canvas" class="chart-canvas"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3 class="chart-title">Top Rejection Reasons</h3>
+                            <canvas id="rejection-chart-canvas" class="chart-canvas"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3 class="chart-title">Rejection Rate by Payer</h3>
+                            <canvas id="payer-chart-canvas" class="chart-canvas"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3 class="chart-title">Rejection Analysis</h3>
+                            <div id="rejection-reasons-container"></div>
+                            <div id="rejection-reasons-loading" style="display: none;">Loading...</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AI Insights Section -->
+                <section class="results-section" id="insights-section">
+                    <h2 class="results-title">AI Intelligence Insights</h2>
+                    
+                    <div class="api-key-section">
+                        <h3 class="chart-title">OpenAI API Key</h3>
+                        <input type="password" id="openai-api-key" class="api-key-input" placeholder="Enter your OpenAI API key to generate insights">
+                        <div class="download-buttons">
+                            <button class="upload-btn" id="generate-insights-btn">Generate Insights</button>
+                            <button class="upload-btn" id="refresh-insights-btn" style="background: var(--bg-secondary); color: var(--text-primary);">Refresh</button>
+                        </div>
+                        <div id="insights-loading" style="display: none; text-align: center; margin-top: 1rem;">
+                            <div class="processing-icon" style="width: 50px; height: 50px; font-size: 1.5rem;">🧠</div>
+                            <div style="color: var(--text-secondary);">Generating insights...</div>
+                        </div>
+                    </div>
+                    
+                    <div id="ai-insights-container" style="display: none;">
+                        <div class="insights-container">
+                            <div class="insights-section">
+                                <h3>Key Insights</h3>
+                                <div id="ai-insights-content" class="insights-content"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="insights-container">
+                            <div class="insights-section">
+                                <h3>Recommendations</h3>
+                                <div id="ai-recommendations-content" class="insights-content"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reports Section -->
+                <section class="results-section" id="reports-section">
+                    <h2 class="results-title">Generate Reports</h2>
+                    
+                    <div class="results-card">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-secondary);">Select Report Options</h3>
+                        
+                        <form id="report-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                            <div>
+                                <h4 style="color: var(--accent); margin-bottom: 0.5rem;">Format</h4>
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">
+                                    <input type="radio" name="reportType" value="json" checked style="margin-right: 0.5rem;"> JSON
+                                </label>
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">
+                                    <input type="radio" name="reportType" value="csv" style="margin-right: 0.5rem;"> CSV
+                                </label>
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">
+                                    <input type="radio" name="reportType" value="excel" style="margin-right: 0.5rem;"> Excel
+                                </label>
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">
+                                    <input type="radio" name="reportType" value="pdf" style="margin-right: 0.5rem;"> PDF
+                                </label>
+                            </div>
+                            
+                            <div>
+                                <h4 style="color: var(--accent); margin-bottom: 0.5rem;">Include Sections</h4>
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">
+                                    <input type="checkbox" id="include-overview" checked style="margin-right: 0.5rem;"> Overview
+                                </label>
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">
+                                    <input type="checkbox" id="include-rejections" checked style="margin-right: 0.5rem;"> Rejections
+                                </label>
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">
+                                    <input type="checkbox" id="include-trends" checked style="margin-right: 0.5rem;"> Trends
+                                </label>
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">
+                                    <input type="checkbox" id="include-payers" checked style="margin-right: 0.5rem;"> Payers
+                                </label>
+                            </div>
+                        </form>
+                        
+                        <button class="upload-btn" id="generate-report-btn" style="width: 100%;">Generate Report</button>
+                    </div>
+                    
+                    <div class="results-card">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-secondary);">Generated Reports</h3>
+                        <div id="reports-list" style="color: var(--text-muted);">
+                            <p>No reports generated yet.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="footer">
+            <p>© 2025 BRAINSAIT - Healthcare Insurance Intelligence Platform</p>
+            <p>Optimized for deployment on Cloudflare Workers</p>
+        </footer>
+    </div>
+
+    <!-- Subscription Management -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get subscription information
+            const subscriptionDate = document.getElementById('subscription-date');
+            const expiryDate = localStorage.getItem('brainsait_premium_expiry');
+            const startDate = localStorage.getItem('brainsait_subscription_start');
+            const paymentMethod = localStorage.getItem('brainsait_payment_method');
+            
+            if (subscriptionDate && expiryDate && startDate) {
+                const endDate = new Date(expiryDate);
+                const beginDate = new Date(startDate);
+                const now = new Date();
+                
+                // Format expiry date nicely
+                const formatter = new Intl.DateTimeFormat('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric'
+                });
+                
+                // Calculate days left and total subscription length
+                const daysLeft = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
+                const totalDays = Math.ceil((endDate - beginDate) / (1000 * 60 * 60 * 24));
+                const daysUsed = totalDays - daysLeft;
+                
+                // Calculate percentage of subscription used
+                const percentUsed = Math.min(100, Math.round((daysUsed / totalDays) * 100));
+                
+                // Display subscription info
+                subscriptionDate.innerHTML = `${formatter.format(endDate)} <span style="color: var(--text-muted); margin-left: 5px;">(${daysLeft} days left)</span>`;
+                
+                // Add progress bar to subscription bar
+                const subscriptionBar = document.getElementById('subscription-bar');
+                if (subscriptionBar) {
+                    const progressBarHtml = `
+                        <div style="width: 100%; background: rgba(255, 255, 255, 0.1); height: 4px; border-radius: 2px; margin-top: 10px;">
+                            <div style="width: ${percentUsed}%; background: var(--accent); height: 4px; border-radius: 2px;"></div>
+                        </div>
+                    `;
+                    
+                    // Insert progress bar before subscription actions
+                    const subscriptionInfo = document.querySelector('.subscription-info');
+                    if (subscriptionInfo) {
+                        subscriptionInfo.innerHTML += progressBarHtml;
+                    }
+                    
+                    // Change colors based on time left
+                    if (daysLeft <= 3) {
+                        subscriptionDate.style.color = '#ff3a30'; // Red for critical
+                    } else if (daysLeft <= 7) {
+                        subscriptionDate.style.color = '#ff6b35'; // Orange for warning
+                    }
+                }
+                
+                // Add tooltip with payment details to the subscription status
+                const subStatus = document.querySelector('.subscription-status');
+                if (subStatus && paymentMethod) {
+                    let paymentDisplay = 'Credit Card';
+                    
+                    switch(paymentMethod) {
+                        case 'paypal': paymentDisplay = 'PayPal'; break;
+                        case 'applepay': paymentDisplay = 'Apple Pay'; break;
+                        case 'mada': paymentDisplay = 'Mada'; break;
+                        case 'stcpay': paymentDisplay = 'STC Pay'; break;
+                        case 'visa': paymentDisplay = 'Visa/MC'; break;
+                    }
+                    
+                    subStatus.title = `Paid via ${paymentDisplay} on ${formatter.format(beginDate)}`;
+                }
+            }
+            
+            // Add renewal button functionality
+            const renewButton = document.getElementById('renew-subscription');
+            if (renewButton) {
+                renewButton.addEventListener('click', function() {
+                    if (confirm('Would you like to renew your subscription for another month?')) {
+                        // Redirect to payment page
+                        window.location.href = 'payment.html';
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <!-- Load our integrated JavaScript -->
+    <script src="js/brainsait.js"></script>
+</body>
+</html>

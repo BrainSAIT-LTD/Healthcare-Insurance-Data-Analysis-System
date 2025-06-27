@@ -3,25 +3,32 @@
   "version": "1.0.0",
   "description": "A lightweight system for analyzing healthcare insurance data, optimized for Cloudflare Workers",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "dev": "wrangler dev --local",
     "deploy": "wrangler deploy",
-    "test": "mocha"
+    "test": "mocha --experimental-loader ./test/loader.js",
+    "test:unit": "mocha test/unit/*.test.js",
+    "lint": "eslint src/ --ext .js",
+    "format": "prettier --write src/ public/"
   },
   "author": "BrainSAIT-LTD",
   "license": "GPL-3.0",
   "dependencies": {
+    "chart.js": "^3.9.1",
     "exceljs": "^4.3.0",
     "itty-router": "^3.0.12",
-    "chart.js": "^4.3.0",
-    "pdf-parse": "^1.1.1",
     "openai": "^4.12.1",
-    "d3-array": "^3.2.4",
+    "pdf-parse": "^1.1.1",
     "simple-statistics": "^7.8.3"
   },
   "devDependencies": {
-    "wrangler": "^3.13.1"
+    "@cloudflare/workers-types": "^4.20240312.0",
+    "eslint": "^8.57.0",
+    "mocha": "^11.7.1",
+    "prettier": "^3.2.5",
+    "wrangler": "^4.22.0"
   },
   "keywords": [
     "healthcare",

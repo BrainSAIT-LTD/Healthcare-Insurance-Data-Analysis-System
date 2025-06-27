@@ -1,0 +1,539 @@
+TWILIO_ACCOUNT_SID=<YOUR_TWILIO_ACCOUNT_SID>
+TWILIO_AUTH_TOKEN=<YOUR_TWILIO_AUTH_TOKEN>
+TWILIO_VERIFY_SERVICE_SID=<YOUR_TWILIO_VERIFY_SERVICE_SID>
+
+
+
+
+
+import React, { useState, useEffect } from 'react';
+import { Shield, Smartphone, Check, X, Settings, Activity, Users, FileText, Bell, Sun, Moon } from 'lucide-react';
+
+const BrainSAITTwilioVerify = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [language, setLanguage] = useState('en');
+  const [theme, setTheme] = useState('dark');
+  const [factors, setFactors] = useState([]);
+  const [challenges, setChallenges] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Mock data for demonstration
+  useEffect(() => {
+    setFactors([
+      {
+        sid: 'YF123abc',
+        friendlyName: 'Dr. Al Fadil - iPhone',
+        status: 'verified',
+        identity: 'fadil369@hotmail.com',
+        created: '2025-06-13T10:30:00Z'
+      }
+    ]);
+
+    setChallenges([
+      {
+        sid: 'YC456def',
+        factorSid: 'YF123abc',
+        status: 'pending',
+        message: 'Login attempt from new device',
+        created: '2025-06-13T14:30:00Z',
+        details: {
+          location: 'Riyadh, Saudi Arabia',
+          device: 'MacBook Pro',
+          ip: '192.168.1.100'
+        }
+      }
+    ]);
+  }, []);
+
+  const translations = {
+    en: {
+      title: 'BrainSAIT Verify',
+      subtitle: 'Secure Healthcare Authentication',
+      dashboard: 'Dashboard',
+      factors: 'Auth Factors',
+      challenges: 'Challenges',
+      settings: 'Settings',
+      createFactor: 'Create Factor',
+      identity: 'Identity',
+      friendlyName: 'Friendly Name',
+      status: 'Status',
+      actions: 'Actions',
+      approve: 'Approve',
+      deny: 'Deny',
+      delete: 'Delete',
+      pending: 'Pending',
+      approved: 'Approved',
+      denied: 'Denied',
+      verified: 'Verified',
+      unverified: 'Unverified',
+      message: 'Message',
+      details: 'Details',
+      location: 'Location',
+      device: 'Device',
+      ipAddress: 'IP Address',
+      created: 'Created',
+      totalFactors: 'Total Factors',
+      pendingChallenges: 'Pending Challenges',
+      successRate: 'Success Rate',
+      apiEndpoint: 'API Endpoint',
+      accessToken: 'Access Token',
+      serviceSid: 'Service SID',
+      pushToken: 'Push Token',
+      save: 'Save',
+      cancel: 'Cancel',
+      brainsaitPlatform: 'BrainSAIT Digital Healthcare Platform',
+      automatedIntegratedTech: 'Automated, Integrated, Technology-driven',
+      healthcareAuth: 'Healthcare Authentication & Authorization'
+    },
+    ar: {
+      title: 'برين سايت للتحقق',
+      subtitle: 'مصادقة الرعاية الصحية الآمنة',
+      dashboard: 'لوحة التحكم',
+      factors: 'عوامل المصادقة',
+      challenges: 'التحديات',
+      settings: 'الإعدادات',
+      createFactor: 'إنشاء عامل',
+      identity: 'الهوية',
+      friendlyName: 'الاسم المألوف',
+      status: 'الحالة',
+      actions: 'الإجراءات',
+      approve: 'موافقة',
+      deny: 'رفض',
+      delete: 'حذف',
+      pending: 'معلق',
+      approved: 'موافق عليه',
+      denied: 'مرفوض',
+      verified: 'موثق',
+      unverified: 'غير موثق',
+      message: 'الرسالة',
+      details: 'التفاصيل',
+      location: 'الموقع',
+      device: 'الجهاز',
+      ipAddress: 'عنوان IP',
+      created: 'تم الإنشاء',
+      totalFactors: 'إجمالي العوامل',
+      pendingChallenges: 'التحديات المعلقة',
+      successRate: 'معدل النجاح',
+      apiEndpoint: 'نقطة API',
+      accessToken: 'رمز الوصول',
+      serviceSid: 'معرف الخدمة',
+      pushToken: 'رمز الدفع',
+      save: 'حفظ',
+      cancel: 'إلغاء',
+      brainsaitPlatform: 'منصة برين سايت للرعاية الصحية الرقمية',
+      automatedIntegratedTech: 'آلي، متكامل، مدفوع بالتكنولوجيا',
+      healthcareAuth: 'مصادقة وتفويض الرعاية الصحية'
+    }
+  };
+
+  const t = translations[language];
+
+  const handleChallengeAction = (challengeSid, action) => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setChallenges(prev => 
+        prev.map(challenge => 
+          challenge.sid === challengeSid 
+            ? { ...challenge, status: action }
+            : challenge
+        )
+      );
+      setLoading(false);
+    }, 1000);
+  };
+
+  const createFactor = async (factorData) => {
+    setLoading(true);
+    // Simulate factor creation
+    setTimeout(() => {
+      const newFactor = {
+        sid: `YF${Math.random().toString(36).substr(2, 6)}`,
+        ...factorData,
+        status: 'unverified',
+        created: new Date().toISOString()
+      };
+      setFactors(prev => [...prev, newFactor]);
+      setLoading(false);
+    }, 1500);
+  };
+
+  const DashboardTab = () => (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className={`${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow-md p-6 border-l-4 border-blue-600`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>{t.totalFactors}</p>
+            <p className="text-2xl font-bold text-blue-600">{factors.length}</p>
+          </div>
+          <Users className="w-8 h-8 text-blue-600" />
+        </div>
+      </div>
+      
+      <div className={`${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow-md p-6 border-l-4 border-orange-500`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>{t.pendingChallenges}</p>
+            <p className="text-2xl font-bold text-orange-500">{challenges.filter(c => c.status === 'pending').length}</p>
+          </div>
+          <Bell className="w-8 h-8 text-orange-500" />
+        </div>
+      </div>
+      
+      <div className={`${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow-md p-6 border-l-4 border-green-600`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>{t.successRate}</p>
+            <p className="text-2xl font-bold text-green-600">94%</p>
+          </div>
+          <Activity className="w-8 h-8 text-green-600" />
+        </div>
+      </div>
+
+      <div className={`md:col-span-3 ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow-md p-6`}>
+        <h3 className="text-lg font-semibold mb-4 flex items-center">
+          <Shield className="w-5 h-5 mr-2 text-blue-600" />
+          Recent Authentication Activity
+        </h3>
+        <div className="space-y-3">
+          {challenges.slice(0, 3).map(challenge => (
+            <div key={challenge.sid} className={`flex items-center justify-between p-3 ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'} rounded`}>
+              <div>
+                <p className="font-medium">{challenge.message}</p>
+                <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>{challenge.details.location} • {new Date(challenge.created).toLocaleString()}</p>
+              </div>
+              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                challenge.status === 'pending' ? 'bg-orange-100 text-orange-800' :
+                challenge.status === 'approved' ? 'bg-green-100 text-green-800' :
+                'bg-red-100 text-red-800'
+              }`}>
+                {t[challenge.status]}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const FactorsTab = () => (
+    <div className={`${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow-md p-6`}>
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-lg font-semibold">{t.factors}</h3>
+        <button 
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"
+          onClick={() => {
+            const identity = prompt(t.identity);
+            const friendlyName = prompt(t.friendlyName);
+            if (identity && friendlyName) {
+              createFactor({ identity, friendlyName });
+            }
+          }}
+        >
+          <Smartphone className="w-4 h-4 mr-2" />
+          {t.createFactor}
+        </button>
+      </div>
+      
+      <div className="overflow-x-auto">
+        <table className="min-w-full">
+          <thead className={`${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'}`}>
+            <tr>
+              <th className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
+                {t.identity}
+              </th>
+              <th className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
+                {t.friendlyName}
+              </th>
+              <th className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
+                {t.status}
+              </th>
+              <th className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
+                {t.created}
+              </th>
+              <th className={`px-6 py-3 text-left text-xs font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
+                {t.actions}
+              </th>
+            </tr>
+          </thead>
+          <tbody className={`${theme === 'dark' ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'} divide-y`}>
+            {factors.map(factor => (
+              <tr key={factor.sid}>
+                <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
+                  {factor.identity}
+                </td>
+                <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
+                  {factor.friendlyName}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                    factor.status === 'verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {t[factor.status]}
+                  </span>
+                </td>
+                <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>
+                  {new Date(factor.created).toLocaleDateString()}
+                </td>
+                <td className={`px-6 py-4 whitespace-nowrap text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>
+                  <button className="text-red-600 hover:text-red-900">
+                    {t.delete}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  const ChallengesTab = () => (
+    <div className={`${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow-md p-6`}>
+      <h3 className="text-lg font-semibold mb-6">{t.challenges}</h3>
+      
+      <div className="space-y-4">
+        {challenges.map(challenge => (
+          <div key={challenge.sid} className={`${theme === 'dark' ? 'border-gray-600 bg-gray-700' : 'border-gray-200'} border rounded-lg p-4`}>
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <h4 className="font-medium">{challenge.message}</h4>
+                <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} mt-1`}>
+                  {new Date(challenge.created).toLocaleString()}
+                </p>
+              </div>
+              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                challenge.status === 'pending' ? 'bg-orange-100 text-orange-800' :
+                challenge.status === 'approved' ? 'bg-green-100 text-green-800' :
+                'bg-red-100 text-red-800'
+              }`}>
+                {t[challenge.status]}
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 text-sm">
+              <div>
+                <span className="font-medium">{t.location}: </span>
+                {challenge.details.location}
+              </div>
+              <div>
+                <span className="font-medium">{t.device}: </span>
+                {challenge.details.device}
+              </div>
+              <div>
+                <span className="font-medium">{t.ipAddress}: </span>
+                {challenge.details.ip}
+              </div>
+            </div>
+            
+            {challenge.status === 'pending' && (
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleChallengeAction(challenge.sid, 'approved')}
+                  disabled={loading}
+                  className="flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                >
+                  <Check className="w-4 h-4 mr-1" />
+                  {t.approve}
+                </button>
+                <button
+                  onClick={() => handleChallengeAction(challenge.sid, 'denied')}
+                  disabled={loading}
+                  className="flex items-center px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  {t.deny}
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const SettingsTab = () => (
+    <div className={`${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow-md p-6`}>
+      <h3 className="text-lg font-semibold mb-6">{t.settings}</h3>
+      
+      <div className="space-y-6">
+        <div>
+          <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'} mb-2`}>
+            {t.apiEndpoint}
+          </label>
+          <input
+            type="text"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              theme === 'dark' 
+                ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' 
+                : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'
+            }`}
+            placeholder="https://verify.twilio.com"
+            defaultValue="https://verify.twilio.com"
+          />
+        </div>
+        
+        <div>
+          <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'} mb-2`}>
+            {t.accessToken}
+          </label>
+          <input
+            type="password"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              theme === 'dark' 
+                ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' 
+                : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'
+            }`}
+            placeholder="Your Twilio Access Token"
+          />
+        </div>
+        
+        <div>
+          <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'} mb-2`}>
+            {t.serviceSid}
+          </label>
+          <input
+            type="text"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              theme === 'dark' 
+                ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' 
+                : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'
+            }`}
+            placeholder="VAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          />
+        </div>
+        
+        <div className="flex space-x-4">
+          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            {t.save}
+          </button>
+          <button className={`px-4 py-2 rounded-lg ${
+            theme === 'dark' 
+              ? 'bg-gray-600 text-gray-200 hover:bg-gray-500' 
+              : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+          }`}>
+            {t.cancel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'} ${language === 'ar' ? 'rtl' : 'ltr'}`}>
+      {/* Header */}
+      <header className={`${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white'} shadow-sm border-b`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 flex items-center">
+                <Shield className="w-8 h-8 text-blue-600" />
+                <div className="ml-3">
+                  <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t.title}</h1>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>{t.subtitle}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className={`p-2 rounded-lg transition-colors ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+                title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
+              
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className={`px-3 py-1 border rounded-md text-sm ${
+                  theme === 'dark' 
+                    ? 'border-gray-600 bg-gray-700 text-white' 
+                    : 'border-gray-300 bg-white text-gray-900'
+                }`}
+              >
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+              </select>
+              
+              <div className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                <div>Dr. Al Fadil</div>
+                <div className="text-xs">BRAINSAIT LTD</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Navigation */}
+      <nav className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-8">
+            {[
+              { key: 'dashboard', icon: Activity, label: t.dashboard },
+              { key: 'factors', icon: Smartphone, label: t.factors },
+              { key: 'challenges', icon: Bell, label: t.challenges },
+              { key: 'settings', icon: Settings, label: t.settings }
+            ].map(({ key, icon: Icon, label }) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={`flex items-center px-3 py-4 text-sm font-medium border-b-2 ${
+                  activeTab === key
+                    ? 'border-blue-600 text-blue-600'
+                    : `border-transparent ${theme === 'dark' ? 'text-gray-300 hover:text-gray-100' : 'text-gray-500 hover:text-gray-700'} hover:border-gray-300`
+                }`}
+              >
+                <Icon className="w-4 h-4 mr-2" />
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* BrainSAIT Info Banner */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6 mb-8">
+          <h2 className="text-xl font-bold mb-2">{t.brainsaitPlatform}</h2>
+          <p className="mb-2">{t.automatedIntegratedTech}</p>
+          <div className="flex items-center text-sm opacity-90">
+            <Shield className="w-4 h-4 mr-2" />
+            {t.healthcareAuth}
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'dashboard' && <DashboardTab />}
+        {activeTab === 'factors' && <FactorsTab />}
+        {activeTab === 'challenges' && <ChallengesTab />}
+        {activeTab === 'settings' && <SettingsTab />}
+      </main>
+
+      {/* Footer */}
+      <footer className={`${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white'} border-t mt-12`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className={`flex justify-between items-center text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+            <div>
+              <p>© 2025 BrainSAIT LTD. Healthcare Technology Solutions.</p>
+              <p>Automated, Integrated, Technology-driven</p>
+            </div>
+            <div className="flex space-x-4">
+              <a href="https://github.com/fadil369" className="hover:text-blue-600">GitHub</a>
+              <a href="https://linkedin.com/in/fadil369" className="hover:text-blue-600">LinkedIn</a>
+              <a href="https://x.com/brainsait369" className="hover:text-blue-600">Twitter</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default BrainSAITTwilioVerify;
