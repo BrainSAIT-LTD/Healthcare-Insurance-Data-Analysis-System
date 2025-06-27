@@ -16,7 +16,7 @@
   "author": "BrainSAIT-LTD",
   "license": "GPL-3.0",
   "dependencies": {
-    "chart.js": "^3.9.1",
+    "chart.js": "^4.5.0",
     "exceljs": "^4.3.0",
     "itty-router": "^3.0.12",
     "openai": "^4.12.1",
