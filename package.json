@@ -18,7 +18,7 @@
   "dependencies": {
     "chart.js": "^3.9.1",
     "exceljs": "^4.3.0",
-    "itty-router": "^3.0.12",
+    "itty-router": "^5.0.22",
     "openai": "^4.12.1",
     "pdf-parse": "^1.1.1",
     "simple-statistics": "^7.8.3"
